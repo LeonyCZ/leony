@@ -192,6 +192,7 @@ bossTableBody.addEventListener('click', e=>{
 // Alarm interval
 setInterval(()=>{
   const now = new Date();
+
   bossesArray.forEach(boss=>{
     const respawnMs = boss.respawnMinutes * 60000;
     const midnight = new Date(); midnight.setHours(0,0,0,0);
@@ -207,14 +208,14 @@ setInterval(()=>{
     }
     if (now >= nextSpawn) boss.alerted = false;
 
-    const totalSec = Math.floor(diff/1000);
-    const hrs = Math.floor(totalSec/3600);
-    const min = Math.floor((totalSec%3600)/60);
-    const sec = totalSec%60;
     const countdownTd = document.querySelector(`.countdown[data-key="${boss.key}"]`);
     if(countdownTd){
-      countdownTd.textContent = diff<=0?"Spawn!":`${String(hrs).padStart(2,'0')}:${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-      countdownTd.className = `countdown ${totalSec<=60?"green":totalSec<=600?"orange":"red"}`;
+      const hrs = Math.floor(diff / 3600000);
+      const min = Math.floor((diff % 3600000) / 60000);
+      const sec = Math.floor((diff % 60000) / 1000);
+      countdownTd.textContent = diff<=0 ? "Spawn!" : `${String(hrs).padStart(2,'0')}:${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+      countdownTd.dataset.timeleft = diff; // atribut pro řazení
+      countdownTd.className = `countdown ${diff<=60000 ? "green" : diff<=600000 ? "orange" : "red"}`;
     }
 
     const alertTd = document.querySelector(`td[data-alert-key="${boss.key}"]`);
@@ -222,7 +223,18 @@ setInterval(()=>{
       alertTd.textContent = `${alertTime.getHours().toString().padStart(2,'0')}:${alertTime.getMinutes().toString().padStart(2,'0')}:${alertTime.getSeconds().toString().padStart(2,'0')}`;
     }
   });
+
+  // Řazení tabulky podle zbývajícího času
+  const rows = Array.from(bossTableBody.querySelectorAll("tr"));
+  rows.sort((a,b) => {
+      const aTime = parseInt(a.querySelector(".countdown").dataset.timeleft, 10);
+      const bTime = parseInt(b.querySelector(".countdown").dataset.timeleft, 10);
+      return aTime - bTime;
+  });
+  rows.forEach(r => bossTableBody.appendChild(r));
+
 },1000);
+
 
 // Test zvuku
 soundVolume.addEventListener('input',()=>{ alarmSound.volume = soundVolume.value; localStorage.setItem('soundVolume', soundVolume.value); });
