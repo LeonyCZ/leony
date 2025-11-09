@@ -11,7 +11,7 @@ import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.23.0/firebase
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
-// --- Firebase config ---
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyCItXwAnftKXyV-JGadyrE5I98klVm8Aes",
   authDomain: "boss-1289a.firebaseapp.com",
@@ -27,7 +27,7 @@ const analytics = getAnalytics(app);
 const auth = getAuth();
 const db = getDatabase();
 
-// --- Elements ---
+// Elements
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 const loginBtn = document.getElementById("loginBtn");
@@ -47,27 +47,28 @@ const testSoundBtn = document.getElementById("testSound");
 const soundSelect = document.getElementById("soundSelect");
 const alarmSound = document.getElementById("alarmSound");
 
+// Login state
 let isLoggedIn = false;
 let currentUserUID = null;
 
-// --- User interaction / alarm start ---
+// Audio & alarm start
 let userInteracted = localStorage.getItem("alarmsAllowed") === "true";
 let alarmsStarted = userInteracted;
 
-// --- Load settings from localStorage ---
+// Load settings
 soundVolume.value = localStorage.getItem('soundVolume') || 0.5;
 soundToggle.checked = JSON.parse(localStorage.getItem('soundToggle') || "true");
 alarmSound.volume = soundVolume.value;
 
-// --- Zvuk ---
+// Function play sound
 function playSound() {
   if (!soundToggle.checked || !alarmsStarted) return;
   alarmSound.src = soundSelect.value;
   alarmSound.currentTime = 0;
-  alarmSound.play().catch(e => console.log("Zvuk nelze přehrát.", e));
+  alarmSound.play().catch(()=>{}); // tichý fail
 }
 
-// --- Notifikace ---
+// Notification
 function sendNotification(title, body) {
   if (!("Notification" in window)) return;
   if (Notification.permission === "granted") {
@@ -79,7 +80,7 @@ function sendNotification(title, body) {
   }
 }
 
-// --- Login / Logout ---
+// Login / Logout
 loginBtn.addEventListener("click", () => {
   const email = emailInput.value;
   const password = passwordInput.value;
@@ -106,7 +107,7 @@ onAuthStateChanged(auth, user => {
   }
 });
 
-// --- Load bosses ---
+// Load bosses
 let bossesArray = [];
 function loadBosses() {
   const bossRef = ref(db, 'bosses');
@@ -126,7 +127,7 @@ function loadBosses() {
   });
 }
 
-// --- Update table ---
+// Update table
 function updateBossTable() {
   const now = new Date();
   bossesArray.forEach(boss => {
@@ -171,7 +172,7 @@ function updateBossTable() {
   });
 }
 
-// --- Add boss ---
+// Add / Remove boss
 addSpawnBtn.addEventListener("click", ()=>{
   if(!isLoggedIn) return alert("Pro přidání bosse se musíte přihlásit.");
   const name = bossNameInput.value.trim();
@@ -181,8 +182,6 @@ addSpawnBtn.addEventListener("click", ()=>{
   push(ref(db,'bosses'), {name, location, respawnMinutes:respawn});
   bossNameInput.value=""; bossLocationInput.value=""; respawnInput.value="";
 });
-
-// --- Remove boss ---
 bossTableBody.addEventListener('click', e=>{
   if(e.target.classList.contains('removeSpawn') && isLoggedIn){
     const key = e.target.dataset.key;
@@ -190,7 +189,7 @@ bossTableBody.addEventListener('click', e=>{
   }
 });
 
-// --- Alarm interval ---
+// Alarm interval
 setInterval(()=>{
   const now = new Date();
   bossesArray.forEach(boss=>{
@@ -206,7 +205,6 @@ setInterval(()=>{
       sendNotification("Boss alert!", `${boss.name} spawnuje za 2 minuty!`);
       boss.alerted = true;
     }
-
     if (now >= nextSpawn) boss.alerted = false;
 
     const totalSec = Math.floor(diff/1000);
@@ -221,39 +219,38 @@ setInterval(()=>{
 
     const alertTd = document.querySelector(`td[data-alert-key="${boss.key}"]`);
     if(alertTd){
-      const alertH = alertTime.getHours().toString().padStart(2,'0');
-      const alertM = alertTime.getMinutes().toString().padStart(2,'0');
-      const alertS = alertTime.getSeconds().toString().padStart(2,'0');
-      alertTd.textContent = `${alertH}:${alertM}:${alertS}`;
+      alertTd.textContent = `${alertTime.getHours().toString().padStart(2,'0')}:${alertTime.getMinutes().toString().padStart(2,'0')}:${alertTime.getSeconds().toString().padStart(2,'0')}`;
     }
   });
 },1000);
 
-// --- Zvuk test ---
-soundVolume.addEventListener('input',()=>{
-  alarmSound.volume = soundVolume.value;
-  localStorage.setItem('soundVolume', soundVolume.value);
-});
+// Test zvuku
+soundVolume.addEventListener('input',()=>{ alarmSound.volume = soundVolume.value; localStorage.setItem('soundVolume', soundVolume.value); });
 soundToggle.addEventListener('change',()=> localStorage.setItem('soundToggle', soundToggle.checked));
-testSoundBtn.addEventListener('click',()=>{alarmsStarted=true;playSound();});
+testSoundBtn.addEventListener('click',()=>{ alarmsStarted=true; userInteracted=true; playSound(); localStorage.setItem("alarmsAllowed","true"); });
 
-// --- Tlačítko Povolit alerty ---
+// Povolení alarmů - tlačítko + kliknutí anywhere
 const allowAlarmsBtn = document.createElement("button");
 allowAlarmsBtn.textContent = "Povolit alerty";
 allowAlarmsBtn.className = "btn";
 allowAlarmsBtn.style.display = userInteracted ? "none" : "block";
-allowAlarmsBtn.addEventListener("click", () => {
-  alarmsStarted = true;
-  userInteracted = true;
-  localStorage.setItem("alarmsAllowed", "true");
-  allowAlarmsBtn.style.display = "none";
-});
+allowAlarmsBtn.addEventListener("click", enableAlarms);
 document.getElementById("leftPanel").prepend(allowAlarmsBtn);
+
+document.addEventListener('click', function unlockAudio() {
+    if(!userInteracted) enableAlarms();
+});
+function enableAlarms(){
+    alarmsStarted = true;
+    userInteracted = true;
+    localStorage.setItem("alarmsAllowed","true");
+    allowAlarmsBtn.style.display = "none";
+    alarmSound.play().catch(()=>{});
+}
 
 </script>
 </head>
 <body>
-
 <div id="leftPanel">
   <div id="soundPanel">
     <h3>Zvukové nastavení</h3>
@@ -303,6 +300,5 @@ document.getElementById("leftPanel").prepend(allowAlarmsBtn);
   </table>
   <audio id="alarmSound" preload="auto"></audio>
 </div>
-
 </body>
 </html>
