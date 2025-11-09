@@ -44,14 +44,13 @@ const bossTableBody = document.getElementById("bossTableBody");
 const soundToggle = document.getElementById("soundToggle");
 const soundVolume = document.getElementById("soundVolume");
 const testSoundBtn = document.getElementById("testSound");
-const resetSettingsBtn = document.getElementById("resetSettings");
 const soundSelect = document.getElementById("soundSelect");
 const alarmSound = document.getElementById("alarmSound");
 
 let isLoggedIn = false;
 let currentUserUID = null;
 let userInteracted = false;
-let alarmsStarted = false;
+let alarmsStarted = JSON.parse(localStorage.getItem('alarmsStarted') || "false");
 
 // --- Interakce uživatele ---
 document.addEventListener('click', () => { userInteracted = true; }, { once: true });
@@ -60,7 +59,6 @@ document.addEventListener('click', () => { userInteracted = true; }, { once: tru
 soundVolume.value = localStorage.getItem('soundVolume') || 0.5;
 soundToggle.checked = JSON.parse(localStorage.getItem('soundToggle') || "true");
 alarmSound.volume = soundVolume.value;
-alarmsStarted = JSON.parse(localStorage.getItem('alarmsStarted') || "true");
 
 // --- Zvuk ---
 function playSound() {
@@ -234,29 +232,42 @@ setInterval(()=>{
       alertTd.textContent = `${alertH}:${alertM}:${alertS}`;
     }
   });
+
+  const rows = Array.from(bossTableBody.querySelectorAll("tr"));
+  rows.sort((a,b)=>{
+    const aTime = a.querySelector(".countdown").textContent==="Spawn!"?0:parseInt(a.querySelector(".countdown").textContent.replace(/:/g,''),10);
+    const bTime = b.querySelector(".countdown").textContent==="Spawn!"?0:parseInt(b.querySelector(".countdown").textContent.replace(/:/g,''),10);
+    return aTime-bTime;
+  });
+  rows.forEach(r=>bossTableBody.appendChild(r));
+
 },1000);
 
-// --- Uložení nastavení ---
+// --- Zvuk test ---
 soundVolume.addEventListener('input',()=>{
   alarmSound.volume = soundVolume.value;
   localStorage.setItem('soundVolume', soundVolume.value);
 });
-soundToggle.addEventListener('change',()=>{
-  localStorage.setItem('soundToggle', soundToggle.checked);
-});
-testSoundBtn.addEventListener('click',()=>{userInteracted=true;alarmsStarted=true;localStorage.setItem('alarmsStarted',true);playSound();});
+soundToggle.addEventListener('change',()=> localStorage.setItem('soundToggle', soundToggle.checked));
+testSoundBtn.addEventListener('click',()=>{alarmsStarted=true;playSound(); localStorage.setItem('alarmsStarted', 'true');});
 
-// --- Reset tlačítko ---
-resetSettingsBtn.addEventListener('click', ()=>{
-  if(confirm("Opravdu chceš resetovat všechna nastavení?")){
-    localStorage.clear();
-    location.reload();
-  }
+// --- Tlačítko Start alarmů ---
+const startAlarmsBtn = document.createElement("button");
+startAlarmsBtn.textContent = "Povolit alerty";
+startAlarmsBtn.className = "btn";
+startAlarmsBtn.style.marginBottom = "10px";
+if(alarmsStarted) startAlarmsBtn.style.display = "none";
+startAlarmsBtn.addEventListener("click", () => {
+  alarmsStarted = true;
+  userInteracted = true;
+  localStorage.setItem('alarmsStarted', 'true');
+  startAlarmsBtn.style.display = "none";
 });
+document.getElementById("soundPanel").appendChild(startAlarmsBtn);
+
 </script>
 </head>
 <body>
-
 <div id="leftPanel">
   <div id="soundPanel">
     <h3>Zvukové nastavení</h3>
@@ -267,10 +278,7 @@ resetSettingsBtn.addEventListener('click', ()=>{
       <option value="sounds/alert.wav">Alert</option>
       <option value="sounds/ding.wav">Ding</option>
     </select></label>
-    <div style="display:flex;gap:8px;margin-top:8px;">
-      <button id="testSound" class="btn">Test zvuku</button>
-      <button id="resetSettings" class="btn" style="background:#ef4444;">Reset nastavení</button>
-    </div>
+    <button id="testSound" class="btn">Test zvuku</button>
   </div>
 
   <div id="addBossPanel" style="display:none;">
@@ -309,6 +317,5 @@ resetSettingsBtn.addEventListener('click', ()=>{
   </table>
   <audio id="alarmSound" preload="auto"></audio>
 </div>
-
 </body>
 </html>
