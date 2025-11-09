@@ -49,11 +49,10 @@ const alarmSound = document.getElementById("alarmSound");
 
 let isLoggedIn = false;
 let currentUserUID = null;
-let userInteracted = false;
-let alarmsStarted = JSON.parse(localStorage.getItem('alarmsStarted') || "false");
 
-// --- Interakce uživatele ---
-document.addEventListener('click', () => { userInteracted = true; }, { once: true });
+// --- User interaction / alarm start ---
+let userInteracted = localStorage.getItem("alarmsAllowed") === "true";
+let alarmsStarted = userInteracted;
 
 // --- Load settings from localStorage ---
 soundVolume.value = localStorage.getItem('soundVolume') || 0.5;
@@ -140,7 +139,6 @@ function updateBossTable() {
   });
 
   bossesArray.sort((a,b)=>a.timeLeft - b.timeLeft);
-
   bossTableBody.innerHTML = "";
   bossesArray.forEach(boss => {
     const totalSec = Math.floor(boss.timeLeft/1000);
@@ -148,9 +146,7 @@ function updateBossTable() {
     const min = Math.floor((totalSec%3600)/60);
     const sec = totalSec%60;
     const countdownText = boss.timeLeft<=0 ? "Spawn!" : `${String(hrs).padStart(2,'0')}:${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-
     let countdownClass = boss.timeLeft<=60*1000 ? "green" : boss.timeLeft<=600*1000 ? "orange" : "red";
-
     const alertH = boss.alertTime.getHours().toString().padStart(2,'0');
     const alertM = boss.alertTime.getMinutes().toString().padStart(2,'0');
     const alertS = boss.alertTime.getSeconds().toString().padStart(2,'0');
@@ -167,7 +163,6 @@ function updateBossTable() {
       <td>${isLoggedIn?`<button class="removeSpawn btn" data-key="${boss.key}">Odstranit</button>`:""}</td>
     `;
     bossTableBody.appendChild(tr);
-
     const checkbox = tr.querySelector(".spawnNotify");
     checkbox.addEventListener("change", e=>{
       boss.userNotify = e.target.checked;
@@ -206,7 +201,7 @@ setInterval(()=>{
     const alertTime = new Date(nextSpawn.getTime() - 2*60000);
     const diff = alertTime - now;
 
-    if (!boss.alerted && now >= alertTime && now < nextSpawn && boss.userNotify) {
+    if (!boss.alerted && now >= alertTime && now < nextSpawn && boss.userNotify && alarmsStarted) {
       playSound();
       sendNotification("Boss alert!", `${boss.name} spawnuje za 2 minuty!`);
       boss.alerted = true;
@@ -232,15 +227,6 @@ setInterval(()=>{
       alertTd.textContent = `${alertH}:${alertM}:${alertS}`;
     }
   });
-
-  const rows = Array.from(bossTableBody.querySelectorAll("tr"));
-  rows.sort((a,b)=>{
-    const aTime = a.querySelector(".countdown").textContent==="Spawn!"?0:parseInt(a.querySelector(".countdown").textContent.replace(/:/g,''),10);
-    const bTime = b.querySelector(".countdown").textContent==="Spawn!"?0:parseInt(b.querySelector(".countdown").textContent.replace(/:/g,''),10);
-    return aTime-bTime;
-  });
-  rows.forEach(r=>bossTableBody.appendChild(r));
-
 },1000);
 
 // --- Zvuk test ---
@@ -249,25 +235,25 @@ soundVolume.addEventListener('input',()=>{
   localStorage.setItem('soundVolume', soundVolume.value);
 });
 soundToggle.addEventListener('change',()=> localStorage.setItem('soundToggle', soundToggle.checked));
-testSoundBtn.addEventListener('click',()=>{alarmsStarted=true;playSound(); localStorage.setItem('alarmsStarted', 'true');});
+testSoundBtn.addEventListener('click',()=>{alarmsStarted=true;playSound();});
 
-// --- Tlačítko Start alarmů ---
-const startAlarmsBtn = document.createElement("button");
-startAlarmsBtn.textContent = "Povolit alerty";
-startAlarmsBtn.className = "btn";
-startAlarmsBtn.style.marginBottom = "10px";
-if(alarmsStarted) startAlarmsBtn.style.display = "none";
-startAlarmsBtn.addEventListener("click", () => {
+// --- Tlačítko Povolit alerty ---
+const allowAlarmsBtn = document.createElement("button");
+allowAlarmsBtn.textContent = "Povolit alerty";
+allowAlarmsBtn.className = "btn";
+allowAlarmsBtn.style.display = userInteracted ? "none" : "block";
+allowAlarmsBtn.addEventListener("click", () => {
   alarmsStarted = true;
   userInteracted = true;
-  localStorage.setItem('alarmsStarted', 'true');
-  startAlarmsBtn.style.display = "none";
+  localStorage.setItem("alarmsAllowed", "true");
+  allowAlarmsBtn.style.display = "none";
 });
-document.getElementById("soundPanel").appendChild(startAlarmsBtn);
+document.getElementById("leftPanel").prepend(allowAlarmsBtn);
 
 </script>
 </head>
 <body>
+
 <div id="leftPanel">
   <div id="soundPanel">
     <h3>Zvukové nastavení</h3>
@@ -317,5 +303,6 @@ document.getElementById("soundPanel").appendChild(startAlarmsBtn);
   </table>
   <audio id="alarmSound" preload="auto"></audio>
 </div>
+
 </body>
 </html>
