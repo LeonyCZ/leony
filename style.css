@@ -1,0 +1,142 @@
+body {
+  margin:0;
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background:#121212;
+  color:#fff;
+  display:flex;
+}
+
+/* Levý panel */
+#leftPanel {
+  width:320px;
+  background:#1f1f2e;
+  display:flex;
+  flex-direction:column;
+  padding:20px;
+  gap:20px;
+  border-right:1px solid #333;
+  box-shadow:2px 0 12px rgba(0,0,0,0.6);
+  height:100vh;
+  overflow:auto;
+}
+
+/* Zvuk nahoře */
+#soundPanel {
+  background:linear-gradient(145deg, #2e2e4d, #252540);
+  padding:15px;
+  border-radius:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.3);
+}
+
+/* Přidání bosse */
+#addBossPanel {
+  background:linear-gradient(145deg, #2e2e4d, #252540);
+  padding:15px;
+  border-radius:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.3);
+}
+
+/* Login dole */
+#loginPanel {
+  margin-top:auto;
+  background:linear-gradient(145deg, #2e2e4d, #252540);
+  padding:15px;
+  border-radius:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.3);
+}
+
+#loginPanel input, #addBossPanel input, #soundPanel input, #soundPanel select {
+  padding:8px;
+  border-radius:8px;
+  border:none;
+  background:#3b3b5e;
+  color:#fff;
+}
+
+#loginPanel .btn, #soundPanel .btn, #addBossPanel .btn {
+  background:#4f46e5;
+  border-radius:8px;
+  border:none;
+  padding:8px;
+  cursor:pointer;
+  font-weight:bold;
+  transition:0.2s;
+}
+
+#loginPanel .btn:hover, #soundPanel .btn:hover, #addBossPanel .btn:hover {
+  background:#6366f1;
+}
+
+/* Hlavní panel bossů */
+.main {
+  flex:1;
+  padding:25px;
+  overflow:auto;
+}
+
+.boss-table {
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0 8px;
+}
+
+.boss-table th {
+  background:#3b3b5e;
+  padding:10px;
+  border-radius:8px 8px 0 0;
+}
+
+.boss-table td {
+  background:#1f1f2e;
+  padding:10px;
+  text-align:center;
+  border-radius:6px;
+}
+
+.boss-table tr:hover td {
+  background:#2c2c50;
+}
+
+.countdown.green { background:#10b981; border-radius:6px; color:#fff; font-weight:bold; }
+.countdown.orange { background:#f59e0b; border-radius:6px; color:#fff; font-weight:bold; }
+.countdown.red { background:#ef4444; border-radius:6px; color:#fff; font-weight:bold; }
+
+.switch {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+body {
+  margin:0; font-family:'Segoe UI',sans-serif;
+  background:#121212; color:#fff; display:flex;
+}
+
+#leftPanel { width:320px; background:#1f1f2e; display:flex; flex-direction:column; padding:20px; gap:20px; border-right:1px solid #333; box-shadow:2px 0 12px rgba(0,0,0,0.6); height:100vh; overflow:auto; }
+
+#soundPanel, #addBossPanel, #loginPanel { background:linear-gradient(145deg,#2e2e4d,#252540); padding:15px; border-radius:12px; display:flex; flex-direction:column; gap:10px; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.3); }
+
+#soundPanel input, #soundPanel select, #addBossPanel input, #loginPanel input { padding:8px; border-radius:8px; border:none; background:#3b3b5e; color:#fff; }
+
+.btn { background:#4f46e5; border-radius:8px; border:none; padding:8px; cursor:pointer; font-weight:bold; transition:0.2s; }
+.btn:hover { background:#6366f1; }
+
+.main { flex:1; padding:25px; overflow:auto; }
+.boss-table { width:100%; border-collapse:separate; border-spacing:0 8px; }
+.boss-table th { background:#3b3b5e; padding:10px; border-radius:8px 8px 0 0; }
+.boss-table td { background:#1f1f2e; padding:10px; text-align:center; border-radius:6px; }
+.boss-table tr:hover td { background:#2c2c50; }
+
+.countdown.green { background:#10b981; border-radius:6px; color:#fff; font-weight:bold; }
+.countdown.orange { background:#f59e0b; border-radius:6px; color:#fff; font-weight:bold; }
+.countdown.red { background:#ef4444; border-radius:6px; color:#fff; font-weight:bold; }
+
+.switch { display:flex; justify-content:space-between; align-items:center; }

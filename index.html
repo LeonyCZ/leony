@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Metin Boss Alarm</title>
+<link rel="stylesheet" href="style.css">
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+// --- Firebase config ---
+const firebaseConfig = {
+  apiKey: "AIzaSyCItXwAnftKXyV-JGadyrE5I98klVm8Aes",
+  authDomain: "boss-1289a.firebaseapp.com",
+  databaseURL: "https://boss-1289a-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "boss-1289a",
+  storageBucket: "boss-1289a.appspot.com",
+  messagingSenderId: "1015463088703",
+  appId: "1:1015463088703:web:6ea59707f315875abb5e8a",
+  measurementId: "G-4CXH91R3RV"
+};
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const auth = getAuth();
+const db = getDatabase();
+
+// --- Elements ---
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const loginStatus = document.getElementById("loginStatus");
+
+const bossNameInput = document.getElementById("bossName");
+const bossLocationInput = document.getElementById("bossLocation");
+const respawnInput = document.getElementById("respawnMinutes");
+const addSpawnBtn = document.getElementById("addSpawn");
+const addBossPanel = document.getElementById("addBossPanel");
+const bossTableBody = document.getElementById("bossTableBody");
+
+const soundToggle = document.getElementById("soundToggle");
+const soundVolume = document.getElementById("soundVolume");
+const testSoundBtn = document.getElementById("testSound");
+const soundSelect = document.getElementById("soundSelect");
+const alarmSound = document.getElementById("alarmSound");
+
+let isLoggedIn = false;
+let currentUserUID = null;
+let userInteracted = false;
+document.addEventListener('click', () => { userInteracted = true; }, { once: true });
+
+// --- Load settings from localStorage ---
+soundVolume.value = localStorage.getItem('soundVolume') || 0.5;
+soundToggle.checked = JSON.parse(localStorage.getItem('soundToggle') || "true");
+alarmSound.volume = soundVolume.value;
+
+// --- Zvuk ---
+function playSound() {
+  if (!soundToggle.checked || !userInteracted) return;
+  alarmSound.src = soundSelect.value;
+  alarmSound.currentTime = 0;
+  alarmSound.play().catch(e => console.log("Zvuk nelze přehrát.", e));
+}
+
+// --- Notifikace ---
+function sendNotification(title, body) {
+  if (!("Notification" in window)) return;
+  if (Notification.permission === "granted") {
+    new Notification(title, { body });
+  } else if (Notification.permission !== "denied") {
+    Notification.requestPermission().then(permission=>{
+      if(permission==="granted") new Notification(title,{body});
+    });
+  }
+}
+
+// --- Login / Logout ---
+loginBtn.addEventListener("click", () => {
+  const email = emailInput.value;
+  const password = passwordInput.value;
+  signInWithEmailAndPassword(auth, email, password)
+    .catch(err => alert("Chyba přihlášení: " + err.message));
+});
+
+logoutBtn.addEventListener("click", () => signOut(auth));
+
+onAuthStateChanged(auth, user => {
+  if (user) {
+    isLoggedIn = true;
+    currentUserUID = user.uid;
+    loginStatus.textContent = `Přihlášen jako: ${user.email}`;
+    loginStatus.style.color = "#10b981";
+    addBossPanel.style.display = "flex";
+    loadBosses();
+  } else {
+    isLoggedIn = false;
+    currentUserUID = null;
+    loginStatus.textContent = `Nepřihlášen`;
+    loginStatus.style.color = "#f59e0b";
+    addBossPanel.style.display = "none";
+    loadBosses();
+  }
+});
+
+// --- Load bosses ---
+let bossesArray = [];
+
+function loadBosses() {
+  const bossRef = ref(db, 'bosses');
+  onValue(bossRef, snapshot => {
+    const data = snapshot.val();
+    bossesArray = [];
+    if (!data) { bossTableBody.innerHTML = ""; return; }
+
+    bossesArray = Object.keys(data).map(key => {
+      const boss = { key, ...data[key] };
+      // Každý uživatel má své vlastní nastavení alertu
+      boss.userNotify = JSON.parse(localStorage.getItem(`alert_${key}`) || "true");
+      boss.alerted = false;
+      return boss;
+    });
+
+    updateBossTable();
+  });
+}
+
+// --- Update table ---
+function updateBossTable() {
+  const now = new Date();
+  bossesArray.forEach(boss => {
+    const respawnMs = boss.respawnMinutes * 60000;
+    const midnight = new Date(); midnight.setHours(0,0,0,0);
+    const intervalsPassed = Math.floor((now - midnight)/respawnMs);
+    boss.nextSpawnTime = new Date(midnight.getTime() + (intervalsPassed+1)*respawnMs);
+    boss.alertTime = new Date(boss.nextSpawnTime.getTime() - 2*60000);
+    boss.timeLeft = boss.alertTime - now;
+  });
+
+  bossesArray.sort((a,b)=>a.timeLeft - b.timeLeft);
+
+  bossTableBody.innerHTML = "";
+  bossesArray.forEach(boss => {
+    const totalSec = Math.floor(boss.timeLeft/1000);
+    const hrs = Math.floor(totalSec/3600);
+    const min = Math.floor((totalSec%3600)/60);
+    const sec = totalSec%60;
+    const countdownText = boss.timeLeft<=0 ? "Spawn!" : `${String(hrs).padStart(2,'0')}:${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+    
+    let countdownClass = boss.timeLeft<=60*1000 ? "green" : boss.timeLeft<=600*1000 ? "orange" : "red";
+
+    const alertH = boss.alertTime.getHours().toString().padStart(2,'0');
+    const alertM = boss.alertTime.getMinutes().toString().padStart(2,'0');
+    const alertS = boss.alertTime.getSeconds().toString().padStart(2,'0');
+    const alertTimeStr = `${alertH}:${alertM}:${alertS}`;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${boss.name}</td>
+      <td>${boss.location || ""}</td>
+      <td>${boss.respawnMinutes} min</td>
+      <td data-alert-key="${boss.key}">${alertTimeStr}</td>
+      <td><input type="checkbox" class="spawnNotify" data-key="${boss.key}" ${boss.userNotify?"checked":""}></td>
+      <td class="countdown ${countdownClass}" data-key="${boss.key}">${countdownText}</td>
+      <td>${isLoggedIn?`<button class="removeSpawn btn" data-key="${boss.key}">Odstranit</button>`:""}</td>
+    `;
+    bossTableBody.appendChild(tr);
+
+    const checkbox = tr.querySelector(".spawnNotify");
+    checkbox.addEventListener("change", e=>{
+      boss.userNotify = e.target.checked;
+      localStorage.setItem(`alert_${boss.key}`, e.target.checked);
+    });
+  });
+}
+
+// --- Add boss ---
+addSpawnBtn.addEventListener("click", ()=>{
+  if(!isLoggedIn) return alert("Pro přidání bosse se musíte přihlásit.");
+  const name = bossNameInput.value.trim();
+  const location = bossLocationInput.value.trim();
+  const respawn = parseInt(respawnInput.value);
+  if(!name || !respawn) return alert("Vyplň jméno, lokaci a interval respawnu!");
+  push(ref(db,'bosses'), {name, location, respawnMinutes:respawn});
+  bossNameInput.value=""; bossLocationInput.value=""; respawnInput.value="";
+});
+
+// --- Remove boss ---
+bossTableBody.addEventListener('click', e=>{
+  if(e.target.classList.contains('removeSpawn') && isLoggedIn){
+    const key = e.target.dataset.key;
+    remove(ref(db,'bosses/'+key));
+  }
+});
+
+// --- Alarm interval ---
+setInterval(()=>{
+  const now = new Date();
+  bossesArray.forEach(boss=>{
+    const respawnMs = boss.respawnMinutes * 60000;
+    const midnight = new Date(); midnight.setHours(0,0,0,0);
+    const intervalsPassed = Math.floor((now - midnight)/respawnMs);
+    const nextSpawn = new Date(midnight.getTime() + (intervalsPassed+1)*respawnMs);
+    const alertTime = new Date(nextSpawn.getTime() - 2*60000);
+    const diff = alertTime - now;
+
+    // alert jen pokud checkbox zapnutý
+    if (!boss.alerted && now >= alertTime && now < nextSpawn && boss.userNotify) {
+      playSound();
+      sendNotification("Boss alert!", `${boss.name} spawnuje za 2 minuty!`);
+      boss.alerted = true;
+    }
+
+    if (now >= nextSpawn) boss.alerted = false;
+
+    const totalSec = Math.floor(diff/1000);
+    const hrs = Math.floor(totalSec/3600);
+    const min = Math.floor((totalSec%3600)/60);
+    const sec = totalSec%60;
+    const countdownTd = document.querySelector(`.countdown[data-key="${boss.key}"]`);
+    if(countdownTd){
+      countdownTd.textContent = diff<=0?"Spawn!":`${String(hrs).padStart(2,'0')}:${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+      countdownTd.className = `countdown ${totalSec<=60?"green":totalSec<=600?"orange":"red"}`;
+    }
+
+    const alertTd = document.querySelector(`td[data-alert-key="${boss.key}"]`);
+    if(alertTd){
+      const alertH = alertTime.getHours().toString().padStart(2,'0');
+      const alertM = alertTime.getMinutes().toString().padStart(2,'0');
+      const alertS = alertTime.getSeconds().toString().padStart(2,'0');
+      alertTd.textContent = `${alertH}:${alertM}:${alertS}`;
+    }
+  });
+
+  const rows = Array.from(bossTableBody.querySelectorAll("tr"));
+  rows.sort((a,b)=>{
+    const aTime = a.querySelector(".countdown").textContent==="Spawn!"?0:parseInt(a.querySelector(".countdown").textContent.replace(/:/g,''),10);
+    const bTime = b.querySelector(".countdown").textContent==="Spawn!"?0:parseInt(b.querySelector(".countdown").textContent.replace(/:/g,''),10);
+    return aTime-bTime;
+  });
+  rows.forEach(r=>bossTableBody.appendChild(r));
+
+},1000);
+
+// --- Zvuk test ---
+soundVolume.addEventListener('input',()=>{
+  alarmSound.volume = soundVolume.value;
+  localStorage.setItem('soundVolume', soundVolume.value);
+});
+soundToggle.addEventListener('change',()=> localStorage.setItem('soundToggle', soundToggle.checked));
+testSoundBtn.addEventListener('click',()=>{userInteracted=true;playSound();});
+
+</script>
+</head>
+<body>
+
+<div id="leftPanel">
+  <div id="soundPanel">
+    <h3>Zvukové nastavení</h3>
+    <label class="switch"><span>Zapnout zvuk</span><input type="checkbox" id="soundToggle" checked></label>
+    <label>Hlasitost<input type="range" id="soundVolume" min="0" max="1" step="0.01" value="0.5"></label>
+    <label>Vyber zvuk<select id="soundSelect">
+      <option value="sounds/beep.mp3">Beep</option>
+<option value="sounds/alert.wav">Alert</option>
+<option value="sounds/ding.wav">Ding</option>
+    </select></label>
+    <button id="testSound" class="btn">Test zvuku</button>
+  </div>
+
+  <div id="addBossPanel" style="display:none;">
+    <h3>Přidat bosse</h3>
+    <input type="text" id="bossName" placeholder="Jméno bosse">
+    <input type="text" id="bossLocation" placeholder="Lokace">
+    <input type="number" id="respawnMinutes" placeholder="Respawn (min)" min="1">
+    <button id="addSpawn" class="btn">Přidat spawn</button>
+  </div>
+
+  <div id="loginPanel">
+    <h2>Přihlášení</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Heslo">
+    <button id="loginBtn" class="btn">Přihlásit se</button>
+    <button id="logoutBtn" class="btn">Odhlásit se</button>
+    <p id="loginStatus">Nepřihlášen</p>
+  </div>
+</div>
+
+<div class="main">
+  <h1>Metin Boss Alarm</h1>
+  <table class="boss-table">
+    <thead>
+      <tr>
+        <th>Boss</th>
+        <th>Lokace</th>
+        <th>Respawn</th>
+        <th>Čas alertu</th>
+        <th>Upozornění</th>
+        <th>Odpočet</th>
+        <th>Akce</th>
+      </tr>
+    </thead>
+    <tbody id="bossTableBody"></tbody>
+  </table>
+  <audio id="alarmSound" preload="auto"></audio>
+</div>
+
+</body>
+</html>
