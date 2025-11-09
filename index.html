@@ -50,6 +50,9 @@ const alarmSound = document.getElementById("alarmSound");
 let isLoggedIn = false;
 let currentUserUID = null;
 let userInteracted = false;
+let alarmsStarted = false; // pro tlačítko Start alarmů
+
+// --- Interakce uživatele ---
 document.addEventListener('click', () => { userInteracted = true; }, { once: true });
 
 // --- Load settings from localStorage ---
@@ -59,7 +62,7 @@ alarmSound.volume = soundVolume.value;
 
 // --- Zvuk ---
 function playSound() {
-  if (!soundToggle.checked || !userInteracted) return;
+  if (!soundToggle.checked || !alarmsStarted) return;
   alarmSound.src = soundSelect.value;
   alarmSound.currentTime = 0;
   alarmSound.play().catch(e => console.log("Zvuk nelze přehrát.", e));
@@ -84,7 +87,6 @@ loginBtn.addEventListener("click", () => {
   signInWithEmailAndPassword(auth, email, password)
     .catch(err => alert("Chyba přihlášení: " + err.message));
 });
-
 logoutBtn.addEventListener("click", () => signOut(auth));
 
 onAuthStateChanged(auth, user => {
@@ -107,7 +109,6 @@ onAuthStateChanged(auth, user => {
 
 // --- Load bosses ---
 let bossesArray = [];
-
 function loadBosses() {
   const bossRef = ref(db, 'bosses');
   onValue(bossRef, snapshot => {
@@ -117,7 +118,6 @@ function loadBosses() {
 
     bossesArray = Object.keys(data).map(key => {
       const boss = { key, ...data[key] };
-      // Každý uživatel má své vlastní nastavení alertu
       boss.userNotify = JSON.parse(localStorage.getItem(`alert_${key}`) || "true");
       boss.alerted = false;
       return boss;
@@ -148,7 +148,7 @@ function updateBossTable() {
     const min = Math.floor((totalSec%3600)/60);
     const sec = totalSec%60;
     const countdownText = boss.timeLeft<=0 ? "Spawn!" : `${String(hrs).padStart(2,'0')}:${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-    
+
     let countdownClass = boss.timeLeft<=60*1000 ? "green" : boss.timeLeft<=600*1000 ? "orange" : "red";
 
     const alertH = boss.alertTime.getHours().toString().padStart(2,'0');
@@ -206,7 +206,6 @@ setInterval(()=>{
     const alertTime = new Date(nextSpawn.getTime() - 2*60000);
     const diff = alertTime - now;
 
-    // alert jen pokud checkbox zapnutý
     if (!boss.alerted && now >= alertTime && now < nextSpawn && boss.userNotify) {
       playSound();
       sendNotification("Boss alert!", `${boss.name} spawnuje za 2 minuty!`);
@@ -250,7 +249,18 @@ soundVolume.addEventListener('input',()=>{
   localStorage.setItem('soundVolume', soundVolume.value);
 });
 soundToggle.addEventListener('change',()=> localStorage.setItem('soundToggle', soundToggle.checked));
-testSoundBtn.addEventListener('click',()=>{userInteracted=true;playSound();});
+testSoundBtn.addEventListener('click',()=>{alarmsStarted=true;playSound();});
+
+// --- Tlačítko Start alarmů ---
+const startAlarmsBtn = document.createElement("button");
+startAlarmsBtn.textContent = "Start alarmů";
+startAlarmsBtn.className = "btn";
+startAlarmsBtn.addEventListener("click", () => {
+  alarmsStarted = true;
+  userInteracted = true;
+  startAlarmsBtn.style.display = "none";
+});
+document.getElementById("leftPanel").appendChild(startAlarmsBtn);
 
 </script>
 </head>
@@ -263,8 +273,8 @@ testSoundBtn.addEventListener('click',()=>{userInteracted=true;playSound();});
     <label>Hlasitost<input type="range" id="soundVolume" min="0" max="1" step="0.01" value="0.5"></label>
     <label>Vyber zvuk<select id="soundSelect">
       <option value="sounds/beep.mp3">Beep</option>
-<option value="sounds/alert.wav">Alert</option>
-<option value="sounds/ding.wav">Ding</option>
+      <option value="sounds/alert.wav">Alert</option>
+      <option value="sounds/ding.wav">Ding</option>
     </select></label>
     <button id="testSound" class="btn">Test zvuku</button>
   </div>
