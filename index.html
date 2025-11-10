@@ -260,6 +260,28 @@ function enableAlarms(){
     alarmSound.play().catch(()=>{});
 }
 
+setInterval(() => {
+  // 1️⃣ Mini fetch, který „probudí“ síťovou aktivitu (Opera/Chrome často kartu neuspí)
+  fetch(window.location.href, { method: 'HEAD', cache: 'no-store' }).catch(()=>{});
+
+  // 2️⃣ Titulek lehce bliká (udržuje aktivní render loop)
+  document.title = document.title.endsWith(" ") ? "Metin Boss Alarm" : "Metin Boss Alarm ";
+}, 60000); // každých 60 s
+
+// 🟢 Udržuje aktivní zvukový engine, aby mohl přehrát alert i po dlouhé době
+let audioCtx;
+function keepAudioAlive() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  gain.gain.value = 0.00001; // neslyšitelné
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.1);
+}
+setInterval(keepAudioAlive, 90000); // každých 90 s
+
 </script>
 </head>
 <body>
