@@ -100,12 +100,21 @@ function loadOnlineCount() {
   onValue(presenceRef, snap => {
     const data = snap.val();
     let online = 0;
+    const now = Date.now(); // aktuální čas v ms
+
     if (data) {
-      for (let uid in data) if (data[uid].state === "online") online++;
+      for (let uid in data) {
+        const user = data[uid];
+        // pouze pokud je online a lastSeen v posledních 10 sekundách
+        if (user.state === "online" && (now - user.lastSeen) < 10000) {
+          online++;
+        }
+      }
     }
     onlineBox.textContent = `🟢 ${online}`;
   });
 }
+
 
 // ===== ÚKOLNÍČEK =====
 function initLevelSections() {
