@@ -146,9 +146,9 @@ function initLevelSections() {
 
         const li = document.createElement("li");
         const userDone = task.doneUsers || {};
-        const safeUser = currentUser.replace(/\./g, "_");
-        const isDone = userDone[safeUser] || false;
-        const doneUsersList = Object.keys(userDone).map(u => u.replace(/_/g, "."));
+        const userUID = auth.currentUser.uid; // používáme UID místo e-mailu
+        const isDone = userDone[userUID] || false;
+        const doneUsersList = Object.keys(userDone);
         const doneCountNum = doneUsersList.length;
 
         li.className = "task" + (isDone ? " done" : "");
@@ -166,7 +166,7 @@ function initLevelSections() {
         `;
 
         li.querySelector(".chk").addEventListener("click", () => {
-          const userDoneRef = ref(db, `tasks/${child.key}/doneUsers/${safeUser}`);
+          const userDoneRef = ref(db, `tasks/${child.key}/doneUsers/${userUID}`);
           get(userDoneRef).then(snap => {
             if (snap.exists()) remove(userDoneRef);
             else set(userDoneRef, true);
@@ -188,6 +188,7 @@ function initLevelSections() {
     });
   });
 }
+
 
 // ===== OBRAZEK =====
 function initSharedImage() {
