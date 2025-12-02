@@ -3,116 +3,42 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Metin — Sdílený Úkolníček</title>
+<title>Boss Timer</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- LOGIN -->
- <div id="loginWrap">
-  <header><h1>Přihlaš se</h1></header>
-  <main>
-    <input type="email" id="username" placeholder="Email">
-    <input type="password" id="password" placeholder="Heslo">
-    <button class="btn" id="loginBtn">Přihlásit</button>
-  </main>
-  <div id="loginInfo">
-    ⚠️ Tento web je určen jen pro registrované uživatele. Vaše údaje zůstávají soukromé a nebudou sdíleny s třetími stranami.
+<div id="bossWrapper">
+
+  <div id="bossBanner">
+    <div class="boss-header">
+      <div class="boss-title">Nejbližší boss:</div>
+      <div id="bossCountdown">00:00:00</div>
+    </div>
+    <div class="boss-body"></div>
+    <div id="bossTable" class="boss-table"></div>
   </div>
+
+  <!-- Ovládací prvky nad pravý roh banneru -->
+  <div id="controls">
+    <div id="tooltipIcon" class="control-btn">?</div>
+    <div id="settingsBtn" class="control-btn">+</div>
+
+    <div class="lang-dropdown">
+      <div id="currentLang" class="lang-btn" title="Čeština">🇨🇿</div>
+      <div id="langOptions" class="lang-options">
+        <div class="lang-option" data-lang="cz" title="Čeština">🇨🇿</div>
+        <div class="lang-option" data-lang="en" title="English">en</div>
+        <div class="lang-option" data-lang="de" title="Deutsch">🇩🇪</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nový panel: Co web umí -->
+  <div id="featuresList" class="features-list"></div>
+
 </div>
 
-
-
-  <!-- CELÝ ZBYTEK STRÁNKY -->
-  <div id="appContent" style="display:none;">
-<button id="logoutBtn" class="btn" style="background:#ef4444; margin-bottom:10px;">Odhlásit se</button>
-      
-<div id="topInfo">
-  <!-- Počet účtů -->
-  <div class="iconBox" id="userCountBox">
-    <span class="icon">👥</span>
-    <span class="count">12</span>
-  </div>
-
-  <!-- Počet online uživatelů -->
-  <div class="iconBox" id="onlineCountBox">
-    <span class="icon">🟢</span>
-    <span class="count">5</span>
-  </div>
-</div>
-
- <!-- SIDEBAR -->
-    <div class="sidebar">
-      <div class="image-box" id="imageBox">Klikni na tlačítko níže pro přidání obrázku</div>
-      <label for="imgInput" class="upload-label">📸 Přidat obrázek</label>
-      <input type="file" id="imgInput" accept="image/*">
-    </div>
-
-    <!-- ÚKOLNÍČKY -->
-    <div class="main" id="taskWrap">
-      <div class="wrap level-wrap" id="level0_75">
-        <header><h2>Level 0-75</h2></header>
-        <main>
-          <div class="new-task">
-            <input type="text" placeholder="Přidat úkol..." class="taskInput">
-            <button class="btn addBtn">Přidat</button>
-          </div>
-          <div class="stats"><span class="total">Úkolů: 0</span> | <span class="done">Splněno: 0</span></div>
-          <ul class="tasks"></ul>
-        </main>
-      </div>
-      <div class="wrap level-wrap" id="level75_90">
-        <header><h2>Level 75-90</h2></header>
-        <main>
-          <div class="new-task">
-            <input type="text" placeholder="Přidat úkol..." class="taskInput">
-            <button class="btn addBtn">Přidat</button>
-          </div>
-          <div class="stats"><span class="total">Úkolů: 0</span> | <span class="done">Splněno: 0</span></div>
-          <ul class="tasks"></ul>
-        </main>
-      </div>
-      <div class="wrap level-wrap" id="level90_105">
-        <header><h2>Level 90-105</h2></header>
-        <main>
-          <div class="new-task">
-            <input type="text" placeholder="Přidat úkol..." class="taskInput">
-            <button class="btn addBtn">Přidat</button>
-          </div>
-          <div class="stats"><span class="total">Úkolů: 0</span> | <span class="done">Splněno: 0</span></div>
-          <ul class="tasks"></ul>
-        </main>
-      </div>
-      <div class="wrap level-wrap" id="level105_120">
-        <header><h2>Level 105-120</h2></header>
-        <main>
-          <div class="new-task">
-            <input type="text" placeholder="Přidat úkol..." class="taskInput">
-            <button class="btn addBtn">Přidat</button>
-          </div>
-          <div class="stats"><span class="total">Úkolů: 0</span> | <span class="done">Splněno: 0</span></div>
-          <ul class="tasks"></ul>
-        </main>
-      </div>
-    </div>
-
-    <!-- MAPA -->
-    <div class="wrap" id="mapWrap">
-      <header>
-        <h2>Mapa</h2>
-        <button class="btn" id="clearDotsBtn">Smazat všechny puntíky</button>
-      </header>
-      <main>
-        <div id="mapBox">Klikni pro přidání puntíku</div>
-        <ul id="dotLog"></ul>
-        <label for="mapInput" class="upload-label">🌄 Nahraj mapu</label>
-        <input type="file" id="mapInput" accept="image/*">
-      </main>
-    </div>
-  </div>
-
-<!-- EXTERNÍ JS SOUBOR -->
-<script type="module" src="app.js"></script>
-
+<script type="module" src="boss.js"></script>
 </body>
 </html>

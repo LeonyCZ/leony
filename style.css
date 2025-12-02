@@ -1,406 +1,199 @@
 :root {
-  --bg-1:#1a1c22;
-  --bg-2:#23262f;
-  --card:#2e323c;
-  --muted:#a0aec0;
-  --accent-1:#7c3aed;
-  --accent-2:#06b6d4;
-  --accent-grad:linear-gradient(90deg,var(--accent-1),var(--accent-2));
-  --success:#10b981;
-  font-family:'Inter', system-ui, sans-serif;
+  --accent-1: #7c3aed;
+  --accent-2: #06b6d4;
+  --accent-grad: linear-gradient(90deg,var(--accent-1),var(--accent-2));
+  --card: #2e323c;
+  --white: #fff;
+  --bg: #1a1c22;
 }
 
-*{box-sizing:border-box;}
-body{
-  margin:0;
-  background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
-  color:#f1f5f9;
-  font-family:'Inter', system-ui, sans-serif;
-  min-height:100vh;
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Inter', system-ui, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-/* LOGIN - modernizovaná verze */
-#loginWrap {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%,-50%);
-  width: 380px;
-  background: linear-gradient(145deg, #2e2f38, #23252f);
-  padding: 40px 30px;
-  border-radius: 20px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.6);
-  border:1px solid #3b3f47;
-  text-align: center;
+
+#bossWrapper { position: relative; }
+
+#bossBanner {
+  width: 450px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  transition: all 0.3s ease;
-}
-#loginWrap:hover {
-  box-shadow: 0 20px 50px rgba(0,0,0,0.7);
-}
-
-#loginWrap header h1 {
-  font-size: 26px;
-  margin:0;
-  color: #f1f5f9;
-  text-shadow: 0 2px 5px rgba(0,0,0,0.4);
-}
-
-/* Inputs */
-#loginWrap input[type="email"],
-#loginWrap input[type="password"] {
-  width: 100%;
-  padding: 14px 16px;
+  padding: 12px 16px;
+  background: var(--accent-grad);
+  color: var(--white);
+  font-weight: 700;
   border-radius: 12px;
-  border: 1px solid #3b3f47;
-  background:#1e2128;
-  color:#f8fafc;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
   font-size: 16px;
-  transition: all 0.2s ease;
-}
-#loginWrap input[type="email"]:focus,
-#loginWrap input[type="password"]:focus {
-  outline: none;
-  border-color: #7c3aed;
-  box-shadow: 0 0 10px rgba(124,58,237,0.4);
-}
-
-/* Button */
-#loginWrap button {
-  padding: 12px 18px;
-  background: var(--accent-grad);
-  color:white;
-  border-radius:12px;
-  cursor:pointer;
-  border:none;
-  font-weight:600;
-  font-size:16px;
-  transition: all 0.2s ease;
-}
-#loginWrap button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(124,58,237,0.4);
-}
-
-/* GDPR / info box */
-#loginWrap #loginInfo {
-  background: #2a2c33;
-  padding: 12px 14px;
-  border-radius: 12px;
-  font-size: 13px;
-  color: #a0aec0;
-  line-height: 1.4;
-  text-align: left;
-  max-height: 100px;
-  overflow-y: auto;
-  border: 1px solid #3b3f47;
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
-}
-
-
-
-/* APP CONTENT */
-#appContent {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 40px;
-  gap: 30px;
-  margin-left: 500px;
-  margin-right: 500px;
-}
-
-.sidebar {
-  width: 450px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-  position: fixed;
-  top: 40px;
-  left: 40px;
-}
-.image-box {
-  width:450px;
-  height:450px;
-  margin-top: 60px;
-  background:#2e323c;
-  border:2px dashed #555;
-  border-radius:16px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#a0aec0;
-  overflow:hidden;
-}
-.image-box img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
-.sidebar input[type=file]{display:none;}
-.upload-label{
-  background:var(--accent-grad);
-  padding:10px 20px;
-  border-radius:10px;
-  color:white;
-  cursor:pointer;
-  font-weight:600;
-}
-
-/* HLAVNÍ ÚKOLNÍČEK */
-.main {
-  display:flex;
-  flex-direction:column;
-  gap:20px;
-  width:100%;
-  max-width:700px;
-}
-.wrap{
-  width:100%;
-  background:var(--card);
-  padding:20px;
-  border-radius:16px;
-  box-shadow:0 8px 24px rgba(0,0,0,0.3);
-  border:1px solid #3b3f47;
-  margin-bottom:20px;
-}
-
-header{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  margin-bottom:10px;
-  border-bottom:1px solid #3b3f47;
-  padding-bottom:10px;
-}
-header h1, header h2{font-size:22px; margin:0; color:white;}
-
-.new-task {
-  display:flex;
-  gap:10px;
-  margin-bottom:14px;
-}
-.new-task input[type=text] {
-  flex:1;
-  padding:10px 12px;
-  border-radius:10px;
-  border:1px solid #3b3f47;
-  background:#1e2128;
-  color:#f8fafc;
-  font-size:15px;
-}
-.new-task button.btn{
-  padding:10px 14px;
-  background:var(--accent-grad);
-  color:white;
-  border-radius:10px;
-  cursor:pointer;
-  border:none;
-  font-weight:600;
-}
-
-.stats{display:flex; justify-content:flex-start; gap:10px; color:var(--muted); font-size:14px; margin-bottom:10px;}
-
-ul.tasks{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px;}
-li.task{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:10px;
-  border-radius:10px;
-  background:#383d47;
-  border:1px solid #444b55;
-  transition:background 0.3s ease;
-}
-li.task.done{background:#24403b;}
-.chk{
-  width:22px; height:22px;
-  border-radius:6px;
-  background:#2b2f38;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  border:1px solid #555;
-  transition:all 0.3s ease;
-}
-.chk.checked{
-  background:var(--accent-grad);
-  color:white;
-  box-shadow:0 0 10px rgba(124,58,237,0.3);
-}
-.title{font-weight:600; font-size:15px;}
-.del-btn{background:transparent; border:none; color:#cbd5e1; cursor:pointer; font-size:16px; padding:4px; border-radius:6px;}
-.del-btn:hover{color:#ef4444;}
-
-/* kulička s počtem lidí */
-.done-badge {
-  background: var(--accent-grad);
-  color: white;
-  font-weight: 700;
-  font-size: 13px;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: default;
-  transition: transform 0.2s ease;
-  box-shadow: 0 0 8px rgba(124,58,237,0.4);
-}
-.done-badge:hover { transform: scale(1.1); }
-.tooltip-container { position: relative; display: inline-flex; }
-.tooltip-container .tooltip {
-  visibility: hidden;
-  width: max-content;
-  max-width: 200px;
-  background-color: rgba(0,0,0,0.85);
-  color: #fff;
-  text-align: left;
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 13px;
-  position: absolute;
-  z-index: 10;
-  bottom: 120%;
-  left: 50%;
-  transform: translateX(-50%);
-  opacity: 0;
-  transition: opacity 0.2s;
-  pointer-events: none;
-}
-.tooltip-container:hover .tooltip { visibility: visible; opacity: 1; }
-
-/* MAPA */
-#mapInput { display:none; }
-#clearDotsBtn {
-  background: #ef4444;
-  color: white;
-  border-radius: 10px;
-  padding: 8px 12px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(239,68,68,0.4);
-  transition: all 0.2s ease;
-}
-#clearDotsBtn:hover { background: #f87171; transform: scale(1.05); box-shadow:0 6px 16px rgba(239,68,68,0.5); }
-
-#mapWrap {
-  width: 450px;
-  position: fixed;
-  top: 40px;
-  right: 40px;
-}
-#mapBox {
-  width: 100%;
-  height: 450px;
-  background: #2e323c;
-  border:2px dashed #555;
-  border-radius:16px;
   position: relative;
-  overflow: hidden;
-  cursor: crosshair;
+  z-index: 1;
 }
-#mapBox img { width: 100%; height: 100%; object-fit: cover; }
-.dot {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--accent-1);
-  border: 2px solid white;
-  transform: translate(-50%, -50%);
-  cursor: pointer;
-  z-index: 10;
+
+.boss-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
+.boss-title { flex:1; text-align:left; }
+#bossCountdown { flex:1; text-align:center; font-size:18px; font-weight:700; color:#fff; }
+
+.boss-body { 
+  display:flex; 
+  flex-wrap: wrap; 
+  gap:8px; 
+  justify-content: space-between; /* dva bosse na řádek */
 }
-#dotLog {
-  max-height: 120px;
-  overflow-y: auto;
-  margin-top: 10px;
-  padding-left: 10px;
-  font-size: 14px;
+
+.boss-btn {
+  flex: 0 0 48%; /* dva bosse na řádek */
+  box-sizing: border-box;
+  padding: 4px 14px;
+  background: linear-gradient(145deg, #2e323c, #383d47);
+  color: #facc15;
+  border-radius: 9px;
+  font-weight:700;
+  cursor:pointer;
+  text-align:center;
+  transition:0.2s;
 }
-#dotLog li { cursor:pointer; margin-bottom:4px; }
-#logoutBtn {
-  position: fixed;  
-  top: 20px;        
-  left: 40px;       /* pevně vlevo */
-  z-index: 1000;    
-  color: white;
-  border: none;
-  padding: 10px 14px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
+
+.boss-btn:hover { 
+  transform:translateY(-3px); 
+  background:linear-gradient(145deg, #3b3f47, #444b55); 
+}
+
+#controls {
+  position:absolute;
+  top:-20px;
+  right:-20px;
+  display:flex;
+  gap:6px;
+  align-items:center;
+  z-index:10;
+}
+
+.control-btn {
+  width:28px;
+  height:28px;
+  border-radius:50%;
   background: var(--accent-grad);
-  transition: all 0.2s ease;
-}
-#logoutBtn:hover {
-  background: #f87171;
-  transform: scale(1.05);
+  color:#fff;
+  font-weight:700;
+  font-size:16px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  cursor:pointer;
+  box-shadow:0 4px 8px rgba(0,0,0,0.3);
 }
 
-/* Horní info bar - počet účtů a online uživatelů */
-/* Logout button */
-#logoutBtn {
-  position: fixed;
-  top: 20px;
-  left: 40px;       /* pevně vlevo */
-  z-index: 1000;
-  color: white;
-  border: none;
-  padding: 10px 14px;
-  border-radius: 10px;
+/* Lang dropdown */
+.lang-dropdown { position:relative; }
+.lang-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent-grad);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
-  font-weight: 600;
-  background: linear-gradient(90deg, #7c3aed, #06b6d4);
-  transition: all 0.2s ease;
-}
-#logoutBtn:hover {
-  background: #f87171;
-  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  overflow: hidden;
 }
 
-/* Top info panel vedle logout buttonu */
-#topInfo {
-  position: fixed;
-  top: 20px;
-  left: 180px;     /* odsazení od levého okraje nebo od buttonu */
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  z-index: 1000;
-  font-family: 'Inter', sans-serif;
+.lang-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
-.iconBox {
+.lang-options {
+  display: none;
+  position: absolute;
+  top: 46px;
+  left: 0;
+  background: var(--bg);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  flex-direction: column;
+  padding: 4px;
+  z-index: 100;
+}
+
+.lang-option {
+  width: 40px;
+  height: 40px;
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 8px;
-  background: #2e323c;
-  padding: 6px 12px;
+  cursor: pointer;
+  margin: 2px 0;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.lang-option img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.lang-option:hover { background: #444; }
+
+.boss-table { 
+  display:none; 
+  position:absolute; 
+  top:46px; 
+  right:0; 
+  background: rgba(0,0,0,0.95); 
+  color:#fff; 
+  padding:10px; 
+  border-radius:8px; 
+  font-size:14px; 
+  max-height:300px; 
+  overflow-y:auto; 
+  width:250px; 
+  box-shadow:0 4px 12px rgba(0,0,0,0.5); 
+}
+.boss-table.show { display:block; }
+
+#bossInfoTooltip { 
+  position:fixed; 
+  display:none; 
+  pointer-events:none; 
+  background: rgba(0,0,0,0.95); 
+  color:#fff; 
+  padding:8px 12px; 
+  border-radius:8px; 
+  font-size:14px; 
+  white-space:nowrap; 
+  z-index:1000; 
+  box-shadow:0 6px 18px rgba(0,0,0,0.5); 
+  opacity:0; 
+  transition: opacity 0.12s ease, transform 0.12s ease; 
+}
+.features-list {
+  margin-top: 20px;
+  padding: 12px;
+  background: var(--card);
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  color: #f1f5f9;
-  font-weight: 600;
-  font-size: 15px;
-  transition: transform 0.2s ease, background 0.2s ease;
-}
-.iconBox:hover {
-  transform: translateY(-2px);
-  background: #383d47;
+  color: var(--white);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
-.iconBox .icon {
-  font-size: 18px;
-}
-
-.count {
+.features-list h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 16px;
   font-weight: 700;
 }
 
-
+.features-list ul {
+  padding-left: 18px;
+}
